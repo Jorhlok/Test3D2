@@ -1,10 +1,14 @@
 package net.jorhlok.test3d2
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.VertexAttributes
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.g3d.Material
 import com.badlogic.gdx.graphics.g3d.Model
 import com.badlogic.gdx.graphics.g3d.ModelInstance
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
@@ -30,7 +34,6 @@ class Heightmap(val width: Int, val height: Int, var grid: FloatArray) {
                 normal.z += (cur.x-next.x)*(cur.y+next.y)
             }
             normal.nor()
-//            normal.scl(1f,-1f,1f)
         }
     }
 
@@ -48,12 +51,13 @@ class Heightmap(val width: Int, val height: Int, var grid: FloatArray) {
             minh = grid[0]
             val modelBuilder = ModelBuilder()
             modelBuilder.begin()
-            val meshBuilder: MeshPartBuilder = modelBuilder.part("part1", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position.toLong() + VertexAttributes.Usage.Normal + VertexAttributes.Usage.ColorPacked, Material())
-            var even0 = false
-            var even1 = false
+            val tex = Texture(Gdx.files.internal("ISLAND01.png"))
+            //ISLAND01.png clipped from Sonic R
+            modelBuilder.manage(tex)
+            val mat = Material("grass",TextureAttribute.createDiffuse(tex))
+            val meshBuilder: MeshPartBuilder = modelBuilder.part("part1", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position.toLong() + VertexAttributes.Usage.Normal + VertexAttributes.Usage.TextureCoordinates, mat)
+
             for (z in 0 until height) {
-                even1 = even0
-                even0 = !even0
                 for (x in 0 until width) {
                     maxh = Math.max(maxh,grid[z * (width + 1) + x])
                     minh = Math.min(minh,grid[z * (width + 1) + x])
@@ -62,14 +66,17 @@ class Heightmap(val width: Int, val height: Int, var grid: FloatArray) {
                             Vector3(x + 1f, grid[(z + 1) * (width + 1) + x + 1], z + 1f),
                             Vector3(x + 1f, grid[z * (width + 1) + x + 1], z.toFloat()))
                     quads.add(farquad)
-                    if (even1) meshBuilder.setColor(0.5f,0.25f,0f,1f)
-                    else meshBuilder.setColor(0f,0.5f,0f,1f)
-                    even1 = !even1
                     meshBuilder.rect(farquad.pt0,farquad.pt1,farquad.pt2,farquad.pt3,farquad.normal)
                 }
             }
             dasmodel = modelBuilder.end()
             dasinstance = ModelInstance(dasmodel)
         }
+    }
+
+    fun dispose() {
+        dasmodel?.dispose()
+        dasinstance = null
+        quads.clear()
     }
 }

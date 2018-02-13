@@ -9,14 +9,13 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController
 import com.badlogic.gdx.utils.Array
 
 class Test3D2 : ApplicationAdapter() {
 
     var environment: Environment? = null
     var cam: PerspectiveCamera? = null
-    var camController: CameraInputController? = null
+    var camController: FirstPersonControllerCameraController? = null
     var modelBatch: ModelBatch? = null
     var instances = Array<ModelInstance>()
     var floor: Heightmap? = null
@@ -30,13 +29,13 @@ class Test3D2 : ApplicationAdapter() {
 //        DefaultShader.defaultCullFace = 0
 
         cam = PerspectiveCamera(67f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        cam!!.position.set(7f, 7f, 7f)
-        cam!!.lookAt(0f, 0f, 0f)
+        cam!!.position.set(8f, 1f, -8f)
+        cam!!.lookAt(8f, 1f, 0f)
         cam!!.near = 1/64f
         cam!!.far = 1024f
         cam!!.update()
 
-        camController = CameraInputController(cam)
+        camController = FirstPersonControllerCameraController(cam!!)
         Gdx.input.inputProcessor = camController
 
         val w = 64
@@ -52,9 +51,10 @@ class Test3D2 : ApplicationAdapter() {
     }
 
     override fun render() {
-        camController!!.update()
 
         val deltatime = Gdx.graphics.deltaTime
+
+        camController!!.update(deltatime)
 
         //do stuff
 
@@ -70,6 +70,6 @@ class Test3D2 : ApplicationAdapter() {
     override fun dispose() {
         modelBatch?.dispose()
         instances.clear()
-        floor!!.dasmodel!!.dispose()
+        floor?.dispose()
     }
 }
