@@ -69,27 +69,52 @@ class FirstPersonControllerCameraController(private val camera: Camera) : InputA
     }
 
     fun update(deltaTime: Float) {
-        val cont = Controllers.getControllers().first()
-        var axis0 = cont.getAxis(0)
-        var axis1 = cont.getAxis(1)
-        var axis2 = cont.getAxis(2)
-        var axis3 = cont.getAxis(3)
+        val conts = Controllers.getControllers()
+
+        if (conts.size > 0) {
+            for (cont in Controllers.getControllers() ) {
+                var axis0 = cont.getAxis(0)
+                var axis1 = cont.getAxis(1)
+                var axis2 = cont.getAxis(2)
+                var axis3 = cont.getAxis(3)
 
 
-        if (axis0 > -dead && axis0 < dead) axis0 = 0f
-        if (axis1 > -dead && axis1 < dead) axis1 = 0f
-        if (axis2 > -dead && axis2 < dead) axis2 = 0f
-        if (axis3 > -dead && axis3 < dead) axis3 = 0f
+                if (axis0 > -dead && axis0 < dead) axis0 = 0f
+                if (axis1 > -dead && axis1 < dead) axis1 = 0f
+                if (axis2 > -dead && axis2 < dead) axis2 = 0f
+                if (axis3 > -dead && axis3 < dead) axis3 = 0f
 
-//        System.out.println("$axis0\t$axis1\t$axis2\t$axis3")
+//                System.out.println(cont.name)
+//                System.out.println("$axis0\t$axis1\t$axis2\t$axis3")
 
-        val deltaX = -axis3 * joylook
-        val deltaY = -axis2 * joylook
-        if (!(axis2 == 0f && axis3 == 0f)) {
+                val deltaX = -axis3 * joylook
+                val deltaY = -axis2 * joylook
+                if (!(axis2 == 0f && axis3 == 0f)) {
 //            camera.direction.rotate(camera.up, deltaX)
-            tmp.set(camera.direction).crs(camera.up).nor()
-            camera.direction.rotate(tmp, deltaY)
-            camera.rotate(deltaX,0f,1f,0f)
+                    tmp.set(camera.direction).crs(camera.up).nor()
+                    camera.direction.rotate(tmp, deltaY)
+                    camera.rotate(deltaX, 0f, 1f, 0f)
+                }
+
+                if (axis0 != 0f) {
+                    tmp.set(camera.direction).nor().scl(deltaTime * joyvelocity * -axis0)
+                    camera.position.add(tmp)
+                }
+
+                if (axis1 != 0f) {
+                    tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * joyvelocity * axis1)
+                    camera.position.add(tmp)
+                }
+
+                if (keys.containsKey(UP) || cont.getButton(0)) {
+                    tmp.set(camera.up).nor().scl(deltaTime * velocity)
+                    camera.position.add(tmp)
+                }
+                if (keys.containsKey(DOWN) || cont.getButton(1)) {
+                    tmp.set(camera.up).nor().scl(-deltaTime * velocity)
+                    camera.position.add(tmp)
+                }
+            }
         }
 
         if (keys.containsKey(FORWARD)) {
@@ -101,31 +126,12 @@ class FirstPersonControllerCameraController(private val camera: Camera) : InputA
             camera.position.add(tmp)
         }
 
-        if (axis0 != 0f) {
-            tmp.set(camera.direction).nor().scl(deltaTime * joyvelocity * -axis0)
-            camera.position.add(tmp)
-        }
-
         if (keys.containsKey(STRAFE_LEFT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * velocity)
             camera.position.add(tmp)
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * velocity)
-            camera.position.add(tmp)
-        }
-
-        if (axis1 != 0f) {
-            tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * joyvelocity * axis1)
-            camera.position.add(tmp)
-        }
-
-        if (keys.containsKey(UP) || cont.getButton(0)) {
-            tmp.set(camera.up).nor().scl(deltaTime * velocity)
-            camera.position.add(tmp)
-        }
-        if (keys.containsKey(DOWN) || cont.getButton(1)) {
-            tmp.set(camera.up).nor().scl(-deltaTime * velocity)
             camera.position.add(tmp)
         }
         camera.update(true)
