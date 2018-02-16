@@ -3,9 +3,10 @@ package net.jorhlok.test3d2
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.controllers.Controller
 import com.badlogic.gdx.controllers.Controllers
+import com.badlogic.gdx.controllers.PovDirection
 import com.badlogic.gdx.graphics.Camera
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.IntIntMap
 
@@ -18,12 +19,21 @@ class FirstPersonControllerCameraController(private val camera: Camera) : InputA
     private val BACKWARD = Input.Keys.S
     private val UP = Input.Keys.Q
     private val DOWN = Input.Keys.E
+    private val NORTH = Input.Keys.UP
+    private val SOUTH = Input.Keys.DOWN
+    private val WEST = Input.Keys.LEFT
+    private val EAST = Input.Keys.RIGHT
     private var velocity = 5f
     private var degreesPerPixel = 0.5f
     private val tmp = Vector3()
     var dead = 0.15f
     var joyvelocity = 10f
     var joylook = 2f
+    private val DPAD = Vector2()
+
+    var dpad: Vector2
+        get() {val tmp=DPAD.cpy(); DPAD.set(0f,0f); return tmp}
+        set(v:Vector2) {DPAD.set(v)}
 
 //    fun FirstPersonCameraController(camera: Camera): ??? {
 //        this.camera = camera
@@ -106,13 +116,25 @@ class FirstPersonControllerCameraController(private val camera: Camera) : InputA
                     camera.position.add(tmp)
                 }
 
-                if (keys.containsKey(UP) || cont.getButton(0)) {
+                if (cont.getButton(0)) {
                     tmp.set(camera.up).nor().scl(deltaTime * velocity)
                     camera.position.add(tmp)
                 }
-                if (keys.containsKey(DOWN) || cont.getButton(1)) {
+                if (cont.getButton(1)) {
                     tmp.set(camera.up).nor().scl(-deltaTime * velocity)
                     camera.position.add(tmp)
+                }
+
+                when (cont.getPov(0)) {
+                    PovDirection.north -> DPAD.add(0f,deltaTime)
+                    PovDirection.northEast -> DPAD.add(deltaTime,deltaTime)
+                    PovDirection.east -> DPAD.add(deltaTime,0f)
+                    PovDirection.southEast -> DPAD.add(deltaTime,-deltaTime)
+                    PovDirection.south -> DPAD.add(0f,-deltaTime)
+                    PovDirection.southWest -> DPAD.add(-deltaTime,-deltaTime)
+                    PovDirection.west -> DPAD.add(-deltaTime,0f)
+                    PovDirection.northWest -> DPAD.add(-deltaTime,deltaTime)
+                    //else -> {}//nothing
                 }
             }
         }
@@ -133,6 +155,28 @@ class FirstPersonControllerCameraController(private val camera: Camera) : InputA
         if (keys.containsKey(STRAFE_RIGHT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * velocity)
             camera.position.add(tmp)
+        }
+
+        if (keys.containsKey(UP)) {
+            tmp.set(camera.up).nor().scl(deltaTime * velocity)
+            camera.position.add(tmp)
+        }
+        if (keys.containsKey(DOWN)) {
+            tmp.set(camera.up).nor().scl(-deltaTime * velocity)
+            camera.position.add(tmp)
+        }
+
+        if (keys.containsKey(NORTH)) {
+            DPAD.y += deltaTime
+        }
+        if (keys.containsKey(SOUTH)) {
+            DPAD.y -= deltaTime
+        }
+        if (keys.containsKey(EAST)) {
+            DPAD.x += deltaTime
+        }
+        if (keys.containsKey(WEST)) {
+            DPAD.x -= deltaTime
         }
         camera.update(true)
     }

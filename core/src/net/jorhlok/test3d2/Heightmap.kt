@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.VertexAttributes
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.g3d.Material
 import com.badlogic.gdx.graphics.g3d.Model
 import com.badlogic.gdx.graphics.g3d.ModelInstance
@@ -35,6 +34,14 @@ class Heightmap(val width: Int, val height: Int, var grid: FloatArray) {
             }
             normal.nor()
         }
+
+        fun interpolate(x: Float, z: Float): Float {
+            val xx = x-pt0.x
+            val xxx = 1-xx
+            val zz = z-pt0.z
+            val zzz = 1-zz
+            return pt0.y*xxx*zzz+pt3.y*xx*zzz+pt1.y*xxx*zz+pt2.y*xx*zz
+        }
     }
 
     val quads = Array<Quad>()
@@ -53,9 +60,12 @@ class Heightmap(val width: Int, val height: Int, var grid: FloatArray) {
             modelBuilder.begin()
             val tex = Texture(Gdx.files.internal("ISLAND01.png"))
             //ISLAND01.png clipped from Sonic R
-            modelBuilder.manage(tex)
             val mat = Material("grass",TextureAttribute.createDiffuse(tex))
-            val meshBuilder: MeshPartBuilder = modelBuilder.part("part1", GL20.GL_TRIANGLES, VertexAttributes.Usage.Position.toLong() + VertexAttributes.Usage.Normal + VertexAttributes.Usage.TextureCoordinates, mat)
+            val attr = (VertexAttributes.Usage.Position or VertexAttributes.Usage.Normal or VertexAttributes.Usage.TextureCoordinates).toLong()
+            modelBuilder.manage(tex)
+//            val node0 = modelBuilder.node()
+//            node0.id = "node0"
+            val meshBuilder: MeshPartBuilder = modelBuilder.part("part1", GL20.GL_TRIANGLES, attr, mat)
 
             for (z in 0 until height) {
                 for (x in 0 until width) {
